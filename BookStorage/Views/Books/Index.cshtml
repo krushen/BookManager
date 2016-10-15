@@ -1,0 +1,97 @@
+﻿@model IEnumerable<DAL.Entities.Book>
+
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>Index</h2>
+
+<p>
+    @Html.ActionLink("Create New", "Create")
+</p>
+<table class="table">
+    <tr>
+        <th>
+            @Html.DisplayNameFor(model => model.BookTitle)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.Author)
+        </th>
+        <th>
+            @*  @Html.DisplayNameFor(model => model.Author)*@
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.Isbn)
+        </th>
+        <th></th>
+    </tr>
+
+    @foreach (var item in Model)
+    {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.BookTitle)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Author.FirstName)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Author.LastName)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Isbn)
+            </td>
+            <td>
+                @Html.ActionLink("Edit", "Edit", new { id = item.Id }) |
+                @Html.ActionLink("Details", "Details", new { id = item.Id }) |
+                @Html.ActionLink("Delete", "Delete", new { id = item.Id }) |
+                <a href="javascript:void(0);" data-id="@item.Id" class="charts"> ChartShow </a>
+            </td>
+        </tr>
+    }
+
+</table>
+<div id="curve_charts" style="width:400px;height:50%;">
+    @section scripts{
+    <script>
+        $(document).ready(function () {
+            $("a.charts").click(function () {
+                var id = $(this).data("id");
+                $.ajax({
+                    url: "api/charts/books-chart/" + id,
+                    method: "POST",
+                    success: function (data) {
+                        console.log(data);
+                        var dataPoints = [];
+                        for (var i = 0; i < data.length; i++)
+                        {
+                            var dataPoint = {
+                                x: new Date(data[i].Date),
+                                y: data[i].Count
+                            }
+                            dataPoints.push(dataPoint);
+                        }
+                        var chart = new CanvasJS.Chart("curve_charts", {
+                            title: {
+                                text: "Book Chart for " + [id]
+                            },
+                            data: [
+                            {
+                                type: "line",
+
+                                dataPoints: dataPoints
+                            }]
+                        })
+                        chart.render();
+                    },
+                    error: function (data) {
+                        console.log("Bed Bit!");
+                    }
+                })
+            })
+        })
+    </script>
+    }
+
+</div>
